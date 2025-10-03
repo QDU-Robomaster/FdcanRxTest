@@ -13,24 +13,24 @@ depends: []
 #include "app_framework.hpp"
 #include "can.hpp"
 
-class FdcanRx : public LibXR::Application {
+class FdcanRxTest : public LibXR::Application {
 public:
-  FdcanRx(LibXR::HardwareContainer &hw, LibXR::ApplicationManager &app)
+  FdcanRxTest(LibXR::HardwareContainer &hw, LibXR::ApplicationManager &app)
       : can1_(hw.template FindOrExit<LibXR::CAN>({"fdcan1"})),
         can2_(hw.template FindOrExit<LibXR::CAN>({"fdcan2"})),
         can3_(hw.template FindOrExit<LibXR::CAN>({"fdcan3"})) {
     auto rx_can1_callback = LibXR::CAN::Callback::Create(
-        [](bool in_isr, FdcanRx *self, const LibXR::CAN::ClassicPack &pack) {
+        [](bool in_isr, FdcanRxTest *self, const LibXR::CAN::ClassicPack &pack) {
           can1RxCallback(in_isr, self, pack);
         },
         this);
     auto rx_can2_callback = LibXR::CAN::Callback::Create(
-        [](bool in_isr, FdcanRx *self, const LibXR::CAN::ClassicPack &pack) {
+        [](bool in_isr, FdcanRxTest *self, const LibXR::CAN::ClassicPack &pack) {
           can2RxCallback(in_isr, self, pack);
         },
         this);
     auto rx_can3_callback = LibXR::CAN::Callback::Create(
-        [](bool in_isr, FdcanRx *self, const LibXR::CAN::ClassicPack &pack) {
+        [](bool in_isr, FdcanRxTest *self, const LibXR::CAN::ClassicPack &pack) {
           can3RxCallback(in_isr, self, pack);
         },
         this);
@@ -46,7 +46,7 @@ public:
                    LibXR::Thread::Priority::HIGH);
   }
 
-  static void ThreadFunc(FdcanRx *fdcan_rx) {
+  static void ThreadFunc(FdcanRxTest *fdcan_rx) {
     while (true) {
       fdcan_rx->Fdcan1Update();
       fdcan_rx->Fdcan2Update();
@@ -54,7 +54,7 @@ public:
     }
   }
 
-  static void can1RxCallback(bool in_isr, FdcanRx *self,
+  static void can1RxCallback(bool in_isr, FdcanRxTest *self,
                              const LibXR::CAN::ClassicPack &pack) {
     UNUSED(in_isr);
     while (self->recv1_.Push(pack) != ErrorCode::OK) {
@@ -62,14 +62,14 @@ public:
     }
   }
 
-  static void can2RxCallback(bool in_isr, FdcanRx *self,
+  static void can2RxCallback(bool in_isr, FdcanRxTest *self,
                              const LibXR::CAN::ClassicPack &pack) {
     UNUSED(in_isr);
     while (self->recv2_.Push(pack) != ErrorCode::OK) {
       self->recv2_.Pop(); // 如果队列满了，尝试弹出一个包
     }
   }
-  static void can3RxCallback(bool in_isr, FdcanRx *self,
+  static void can3RxCallback(bool in_isr, FdcanRxTest *self,
                              const LibXR::CAN::ClassicPack &pack) {
     UNUSED(in_isr);
     while (self->recv3_.Push(pack) != ErrorCode::OK) {
